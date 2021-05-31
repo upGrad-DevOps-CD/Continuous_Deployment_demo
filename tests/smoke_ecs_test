@@ -1,0 +1,19 @@
+#!/bin/bash
+# Absolute path to this script, e.g. /home/user/bin/foo.sh
+SCRIPT=$(readlink -f "$0")
+# Absolute path this script is in, thus /home/user/bin
+SCRIPTPATH=$(dirname "$SCRIPT")
+. "$SCRIPTPATH/smoke.sh"
+
+BASE_URL=${1:-http://cd-demo-stage-1997297546.us-east-1.elb.amazonaws.com}
+smoke_url_prefix "$BASE_URL"
+smoke_url_ok "/"
+    smoke_assert_body "Application"
+
+smoke_url "/error"
+    smoke_assert_code 500
+    smoke_assert_body "err"
+smoke_url_ok "/metrics"
+    smoke_assert_body "python_gc_collections_total"
+smoke_report
+

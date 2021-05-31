@@ -1,0 +1,61 @@
+- name: "Provision Jenkins"
+  hosts: default
+  become: true
+  
+  vars:
+    jenkins_plugins:
+      - name: pipeline-utility-steps
+        version: "2.7.1"
+    java_packages:
+      - openjdk-8-jdk
+    aws_account_id: "956684297917"  
+
+  roles:
+    - role: geerlingguy.java
+    - role: geerlingguy.jenkins
+    - role: geerlingguy.docker
+
+  tasks:
+  - name: Install heroku
+    snap:
+      name: heroku
+      classic: yes
+  - name: Ensure group "docker" exists with correct gid
+    ansible.builtin.group:
+      name: docker
+      state: present 
+  - name: adding jenkins to docker group
+    ansible.builtin.user:
+      name: jenkins
+      groups: docker
+      append: yes
+  - name: install unzip
+    apt:
+     name: unzip
+     state: present
+  - name: Unarchive aws cli 
+    ansible.builtin.unarchive:
+      src: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+      remote_src: yes
+      dest: /tmp
+      creates: /tmp/aws/install
+  - name: Install awscli
+    ansible.builtin.command:
+      cmd: /tmp/aws/install
+      creates: /usr/local/bin/aws
+  - name: Download and install cred helper for ecr
+    get_url:
+      url: https://amazon-ecr-credential-helper-releases.s3.us-east-2.amazonaws.com/0.5.0/linux-amd64/docker-credential-ecr-login
+      dest: /usr/local/bin/docker-credential-ecr-login
+      mode: '755'
+  
+  - name: Create a directory if it does not exist
+    ansible.builtin.file:
+      path: /var/lib/jenkins/.docker
+      state: directory
+      owner: jenkins
+  
+  - name: Configure docker registry settings
+    ansible.builtin.template:
+      src: config.json.j2
+      dest: /var/lib/jenkins/.docker/config.json
