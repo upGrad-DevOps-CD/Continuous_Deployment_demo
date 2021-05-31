@@ -1,6 +1,9 @@
 # This Repository contains code for CD module demo_flask_app
 Demo Video
 https://drive.google.com/file/d/1NDdJHep-9HTbZshoGL5g-FsxQxkJnEyC/view?usp=sharing
+
+**Note replace 956684297917 with your aws account id wherever applicable** 
+
 ## Jenkins Server
  You can use packer tool https://www.packer.io/docs/install  to build an ami for jenkins and then use that ami for launching jenkins server with all dependencies installed.
 
